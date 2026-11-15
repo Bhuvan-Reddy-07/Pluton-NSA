@@ -368,7 +368,27 @@ Expected output: **Exit code 0 (0 errors)**.
 
 ---
 
-## 10. License & Attribution
+## 10. GitHub Pages Live Deployment
+
+PLUTON includes a complete automated CI/CD pipeline via GitHub Actions for GitHub Pages:
+
+1. **Repository Setup:**
+   ```bash
+   git remote add origin https://github.com/<YOUR_USERNAME>/<YOUR_REPO>.git
+   git push -u origin main
+   ```
+2. **Enable GitHub Pages:**
+   - In your GitHub Repository, navigate to **Settings** > **Pages**.
+   - Under **Build and deployment > Source**, choose **GitHub Actions**.
+   - The `.github/workflows/deploy.yml` workflow will automatically trigger on push, export static artifacts, and publish the live site at `https://<YOUR_USERNAME>.github.io/<YOUR_REPO>/`.
+3. **Alternative Manual Deploy:**
+   ```bash
+   npm run deploy
+   ```
+
+---
+
+## 11. License & Attribution
 
 Designed and maintained for **NASA Jet Propulsion Laboratory (JPL)**, **Canadian Space Agency (CSA)**, and the international lunar exploration community. Built with open-source aerospace standards and authentic NASA / PDS data services.
 
