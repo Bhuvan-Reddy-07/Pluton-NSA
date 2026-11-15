@@ -3,6 +3,8 @@
  * Connects directly to NASA/LRO QuickMap (LROC IM-LDI) infrastructure
  */
 
+import { getAssetPath } from '@/utils/assetPath';
+
 export const QUICKMAP_DEFAULT_URL =
   'https://quickmap.lroc.im-ldi.com/?prjExtent=-5095144.3120067%2C-2313085.1763446%2C4048602.1172227%2C2166736.8997208&earthShadowEnabled=true&proj=10&stack=3314&defs=N4IgzGCMAsIFygPYAcCGBjAlgFwJ70gF9Cg';
 
@@ -89,7 +91,7 @@ export function buildQuickMapProxyUrl(
   stack: string = '3314'
 ): string {
   if (zoom === 'USER_DEFAULT') {
-    return `/api/quickmap`;
+    return getAssetPath('/api/quickmap');
   }
 
   const { x, y } = latLonToSouthPoleStereographic(latDeg, lonDeg);
@@ -103,6 +105,6 @@ export function buildQuickMapProxyUrl(
   const maxY = (y + spanM).toFixed(4);
   const prjExtent = `${minX},${minY},${maxX},${maxY}`;
 
-  return `/api/quickmap?prjExtent=${encodeURIComponent(prjExtent)}&earthShadowEnabled=true&proj=10&stack=${stack}`;
+  return getAssetPath(`/api/quickmap?prjExtent=${encodeURIComponent(prjExtent)}&earthShadowEnabled=true&proj=10&stack=${stack}`);
 }
 

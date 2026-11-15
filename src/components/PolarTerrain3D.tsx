@@ -21,6 +21,10 @@ import {
   Rocket,
   Orbit,
   Sparkles,
+  Copy,
+  Check,
+  Radio as RadioIcon,
+  Navigation,
 } from 'lucide-react';
 import { LunarSite, EphemerisState } from '@/types/pluton';
 import { LUNAR_SOUTH_POLE_SITES } from '@/data/lunarDatabase';
@@ -29,6 +33,7 @@ import {
   buildQuickMapUrl,
   buildQuickMapProxyUrl,
   QuickMapZoomLevel,
+  latLonToSouthPoleStereographic,
 } from '@/engine/quickmapService';
 import {
   buildMoonTrekUrl,
@@ -511,6 +516,13 @@ export const PolarTerrain3D: React.FC<PolarTerrain3DProps> = ({
   const [lroAutoRotate, setLroAutoRotate] = useState<boolean>(false);
   const [customPin, setCustomPin] = useState<{ lat: number; lon: number; elev: number } | null>(null);
   const [isMaximized, setIsMaximized] = useState<boolean>(false);
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+  const handleCopyLink = (url: string, label: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedLink(label);
+    setTimeout(() => setCopiedLink(null), 2500);
+  };
 
   // Compute live LROC QuickMap URLs
   const liveQuickmapUrl = useMemo(() => {
@@ -807,8 +819,8 @@ export const PolarTerrain3D: React.FC<PolarTerrain3DProps> = ({
         )}
 
         {/* Render Authentic NASA LRO 15K GLTF/GLB Moon Model */}
-        {mappingMode === 'NASA_LRO_GLOBE' && (
-          <div className="w-full h-full relative">
+        {(mappingMode === 'NASA_LRO_GLOBE' || mappingMode === 'SPLIT_VIEW') && (
+          <div className={`${mappingMode === 'SPLIT_VIEW' ? 'w-1/2 border-l border-slate-800' : 'w-full'} h-full relative`}>
             <div className="absolute top-3 left-3 z-10 p-2.5 rounded-lg bg-black/80 backdrop-blur-md border border-emerald-500/40 text-[11px] space-y-1 pointer-events-none">
               <div className="font-bold text-emerald-300 flex items-center gap-1.5">
                 <Orbit className="w-3.5 h-3.5 text-emerald-400 animate-spin-slow" />
@@ -847,72 +859,353 @@ export const PolarTerrain3D: React.FC<PolarTerrain3DProps> = ({
           </div>
         )}
 
-        {/* Render NASA Moon Trek */}
+        {/* Render NASA Moon Trek Planetary GIS Console */}
         {mappingMode === 'NASA_MOON_TREK' && (
-          <div className="w-full h-full relative bg-[#02050e] flex flex-col">
-            <div className="absolute top-2 left-2 z-10 bg-[#0f172a]/95 backdrop-blur-md px-2.5 py-1.5 rounded border border-blue-500/40 text-slate-200 font-mono text-[10px] flex items-center gap-2 shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-              <span className="font-bold text-blue-300">NASA JPL MOON TREK (EPSG:104903)</span>
-              <span className="text-slate-400">
-                Target: {activeSite.name} ({activeSite.latitude.toFixed(2)}°S, {activeSite.longitude.toFixed(1)}°E)
-              </span>
+          <div className="w-full h-full relative bg-[#02050f] flex flex-col p-4 md:p-6 overflow-y-auto font-mono text-slate-200">
+            {/* Header Telemetry Pill */}
+            <div className="w-full flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#090e1c] border border-blue-500/40 shadow-xl mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse shadow-md shadow-blue-500/50"></span>
+                <span className="font-bold text-blue-300 text-sm tracking-wide">NASA JPL MOON TREK GIS CONSOLE</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-500/40 font-bold">
+                  EPSG:104903
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 flex items-center gap-2">
+                <span>Target: <strong className="text-white">{activeSite.name}</strong></span>
+                <span className="text-slate-600">|</span>
+                <span className="text-cyan-300 font-bold">{activeSite.latitude.toFixed(4)}°S, {activeSite.longitude.toFixed(4)}°E</span>
+                <span className="text-slate-600">|</span>
+                <span className="text-amber-300">{activeSite.elevation}m Elev</span>
+              </div>
             </div>
 
-            <iframe
-              src={proxyMoonTrekUrl}
-              title="NASA Moon Trek Planetary GIS"
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              loading="lazy"
-            />
+            {/* Main Interactive Telemetry & Reticle Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1 items-stretch">
+              {/* Left / Center: Tactical Polar Stereographic Reticle Radar */}
+              <div className="lg:col-span-7 bg-[#050914] rounded-xl border border-slate-800 p-4 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+                {/* Background Ambient Glow */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-950/20 via-transparent to-transparent pointer-events-none" />
 
-            <div className="absolute bottom-2 right-2 z-10">
-              <a
-                href={liveMoonTrekUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-[#0f172a]/90 hover:bg-slate-800 text-blue-300 border border-blue-500/50 text-[9px] font-mono font-bold px-2 py-1 rounded shadow flex items-center gap-1 transition-colors"
-              >
-                <span>Direct NASA Moon Trek Window</span>
-                <ExternalLink className="w-2.5 h-2.5" />
-              </a>
+                {/* Polar Radar Scope SVG */}
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 320 320">
+                    {/* Range Rings */}
+                    <circle cx="160" cy="160" r="140" fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="3 3" />
+                    <circle cx="160" cy="160" r="105" fill="none" stroke="#1e293b" strokeWidth="1" />
+                    <circle cx="160" cy="160" r="70" fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="3 3" />
+                    <circle cx="160" cy="160" r="35" fill="none" stroke="#0ea5e9" strokeWidth="0.8" strokeOpacity="0.4" />
+
+                    {/* Polar Coordinate Crosshairs */}
+                    <line x1="160" y1="10" x2="160" y2="310" stroke="#334155" strokeWidth="0.75" />
+                    <line x1="10" y1="160" x2="310" y2="160" stroke="#334155" strokeWidth="0.75" />
+
+                    {/* Degree Headings */}
+                    <text x="160" y="24" fill="#64748b" fontSize="8" textAnchor="middle" fontFamily="monospace">0° N</text>
+                    <text x="306" y="163" fill="#64748b" fontSize="8" textAnchor="end" fontFamily="monospace">90° E</text>
+                    <text x="160" y="306" fill="#64748b" fontSize="8" textAnchor="middle" fontFamily="monospace">180° S</text>
+                    <text x="14" y="163" fill="#64748b" fontSize="8" textAnchor="start" fontFamily="monospace">270° W</text>
+
+                    {/* Distance Labels */}
+                    <text x="164" y="93" fill="#0284c7" fontSize="7" fontFamily="monospace">50 km</text>
+                    <text x="164" y="58" fill="#0284c7" fontSize="7" fontFamily="monospace">100 km</text>
+
+                    {/* Sub-Solar Vector Needle */}
+                    {(() => {
+                      const azRad = (ephemerisState.sun.azimuthDeg - 90) * (Math.PI / 180);
+                      const sx = 160 + 130 * Math.cos(azRad);
+                      const sy = 160 + 130 * Math.sin(azRad);
+                      return (
+                        <g>
+                          <line x1="160" y1="160" x2={sx} y2={sy} stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 2" />
+                          <circle cx={sx} cy={sy} r="5" fill="#f59e0b" />
+                        </g>
+                      );
+                    })()}
+
+                    {/* Sub-Earth Vector Needle */}
+                    {(() => {
+                      const azRad = (ephemerisState.earth.azimuthDeg - 90) * (Math.PI / 180);
+                      const ex = 160 + 120 * Math.cos(azRad);
+                      const ey = 160 + 120 * Math.sin(azRad);
+                      return (
+                        <g>
+                          <line x1="160" y1="160" x2={ex} y2={ey} stroke="#06b6d4" strokeWidth="1.5" />
+                          <circle cx={ex} cy={ey} r="4" fill="#06b6d4" />
+                        </g>
+                      );
+                    })()}
+
+                    {/* Center Target Landing Reticle & 3-Sigma Ellipse */}
+                    <ellipse cx="160" cy="160" rx="14" ry="10" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="2 2" />
+                    <circle cx="160" cy="160" r="2.5" fill="#10b981" />
+                  </svg>
+
+                  {/* Pulsing Target Overlay */}
+                  <div className="absolute w-7 h-7 rounded-full border border-emerald-400/80 animate-ping pointer-events-none" />
+                </div>
+
+                {/* Radar Vectors Legend */}
+                <div className="flex flex-wrap items-center justify-center gap-4 mt-3 text-[10px] text-slate-300">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                    <span>Sun Az: <strong>{ephemerisState.sun.azimuthDeg.toFixed(1)}°</strong> ({ephemerisState.sun.elevationTopocentricDeg.toFixed(1)}° El)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
+                    <span>Earth Az: <strong>{ephemerisState.earth.azimuthDeg.toFixed(1)}°</strong> ({ephemerisState.earth.elevationTopocentricDeg.toFixed(1)}° El)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span>3σ Ellipse (±500m)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Telemetry Matrix & Direct Launch Actions */}
+              <div className="lg:col-span-5 flex flex-col justify-between gap-4">
+                {/* Telemetry Matrix Card */}
+                <div className="bg-[#050914] rounded-xl border border-slate-800 p-4 space-y-3">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center justify-between">
+                    <span>SELENOGRAPHIC TELEMETRY</span>
+                    <span className="text-emerald-400 font-mono text-[10px]">JPL DE441 KERNEL</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">BASE ELEVATION</div>
+                      <div className="text-white font-bold text-sm mt-0.5">{activeSite.elevation} m</div>
+                      <div className="text-[9px] text-slate-400">LOLA 20m GDR DEM</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">PSR PROXIMITY</div>
+                      <div className="text-cyan-300 font-bold text-sm mt-0.5">{activeSite.psrProximityKm} km</div>
+                      <div className="text-[9px] text-slate-400">Cryogenic Ice Trap</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">SLOPE GRADIENT</div>
+                      <div className="text-amber-300 font-bold text-sm mt-0.5">{(activeSite.roughnessScore * 12).toFixed(1)}°</div>
+                      <div className="text-[9px] text-slate-400">Landing Stability (&le;8.5°)</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">EARTH DTE LINK</div>
+                      <div className={`font-bold text-sm mt-0.5 ${ephemerisState.earth.elevationTopocentricDeg > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {ephemerisState.earth.elevationTopocentricDeg > 0 ? 'ACTIVE (AOS)' : 'OCCULTED (LOS)'}
+                      </div>
+                      <div className="text-[9px] text-slate-400">Libration: &plusmn;6.7° Lat</div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded bg-blue-950/30 border border-blue-500/30 text-[10px] text-blue-200">
+                    <strong>NASA Cross-Origin Security Note:</strong> NASA JPL Solar System Treks operates under federal frame security restrictions (<code>X-Frame-Options: SAMEORIGIN</code>). PLUTON synchronizes live DE441 coordinates and polar stereographic extents directly into the portal launcher below.
+                  </div>
+                </div>
+
+                {/* Primary Launch & Action Buttons */}
+                <div className="space-y-2">
+                  <a
+                    href={liveMoonTrekUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs tracking-wider uppercase transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 cursor-pointer border border-blue-400/50"
+                  >
+                    <Rocket className="w-4 h-4 text-white" />
+                    <span>LAUNCH OFFICIAL NASA JPL MOON TREK (EPSG:104903)</span>
+                    <ExternalLink className="w-3.5 h-3.5 ml-1 text-blue-200" />
+                  </a>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => handleCopyLink(liveMoonTrekUrl, 'MOON_TREK')}
+                      className="py-2 px-2.5 rounded-lg bg-[#090e1c] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-all text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      {copiedLink === 'MOON_TREK' ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400">COPIED!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-cyan-400" />
+                          <span>COPY LINK</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setMappingMode('THREE_JS_3D')}
+                      className="py-2 px-2.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Box className="w-3 h-3 text-amber-400" />
+                      <span>3D MESH</span>
+                    </button>
+
+                    <button
+                      onClick={() => setMappingMode('NASA_LRO_GLOBE')}
+                      className="py-2 px-2.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition-all text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Orbit className="w-3 h-3 text-emerald-400" />
+                      <span>15K GLOBE</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Render LROC QuickMap GIS (when active or on right side of split view) */}
-        {(mappingMode === 'LROC_QUICKMAP' || mappingMode === 'SPLIT_VIEW') && (
-          <div
-            className={`h-full relative bg-[#02050e] flex flex-col ${
-              mappingMode === 'SPLIT_VIEW' ? 'w-1/2' : 'w-full'
-            }`}
-          >
-            <div className="absolute top-2 left-2 z-10 bg-[#0f172a]/95 backdrop-blur-md px-2.5 py-1.5 rounded border border-cyan-500/40 text-slate-200 font-mono text-[10px] flex items-center gap-2 shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-              <span className="font-bold text-cyan-300">LROC QUICKMAP POLAR GIS (PROJ 10)</span>
-              <span className="text-slate-400">
-                Lat: {activeSite.latitude.toFixed(2)}°S, Lon: {activeSite.longitude.toFixed(1)}°E
-              </span>
+        {/* Render LROC QuickMap GIS Console */}
+        {mappingMode === 'LROC_QUICKMAP' && (
+          <div className="w-full h-full relative bg-[#02050f] flex flex-col p-4 md:p-6 overflow-y-auto font-mono text-slate-200">
+            {/* Header Telemetry Pill */}
+            <div className="w-full flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#090e1c] border border-cyan-500/40 shadow-xl mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-md shadow-cyan-500/50"></span>
+                <span className="font-bold text-cyan-300 text-sm tracking-wide">LROC QUICKMAP POLAR GIS CONSOLE</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 font-bold">
+                  PROJ 10 • STACK 3314
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 flex items-center gap-2">
+                <span>Site: <strong className="text-white">{activeSite.name}</strong></span>
+                <span className="text-slate-600">|</span>
+                <span className="text-cyan-300 font-bold">{activeSite.latitude.toFixed(4)}°S, {activeSite.longitude.toFixed(4)}°E</span>
+              </div>
             </div>
 
-            <iframe
-              src={proxyQuickmapUrl}
-              title="LROC QuickMap Lunar South Pole GIS"
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              loading="lazy"
-            />
+            {/* Main Interactive Telemetry & Reticle Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1 items-stretch">
+              {/* Left / Center: Polar Stereographic Projector Visualization */}
+              <div className="lg:col-span-7 bg-[#050914] rounded-xl border border-slate-800 p-4 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-950/20 via-transparent to-transparent pointer-events-none" />
 
-            <div className="absolute bottom-2 right-2 z-10">
-              <a
-                href={liveQuickmapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-[#0f172a]/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/50 text-[9px] font-mono font-bold px-2 py-1 rounded shadow flex items-center gap-1 transition-colors"
-              >
-                <span>Direct LROC QuickMap Window</span>
-                <ExternalLink className="w-2.5 h-2.5" />
-              </a>
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 320 320">
+                    <circle cx="160" cy="160" r="140" fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="3 3" />
+                    <circle cx="160" cy="160" r="105" fill="none" stroke="#1e293b" strokeWidth="1" />
+                    <circle cx="160" cy="160" r="70" fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="3 3" />
+                    <circle cx="160" cy="160" r="35" fill="none" stroke="#06b6d4" strokeWidth="0.8" strokeOpacity="0.4" />
+
+                    <line x1="160" y1="10" x2="160" y2="310" stroke="#334155" strokeWidth="0.75" />
+                    <line x1="10" y1="160" x2="310" y2="160" stroke="#334155" strokeWidth="0.75" />
+
+                    <text x="160" y="24" fill="#64748b" fontSize="8" textAnchor="middle" fontFamily="monospace">0° LON</text>
+                    <text x="306" y="163" fill="#64748b" fontSize="8" textAnchor="end" fontFamily="monospace">90° E</text>
+                    <text x="160" y="306" fill="#64748b" fontSize="8" textAnchor="middle" fontFamily="monospace">180° W</text>
+                    <text x="14" y="163" fill="#64748b" fontSize="8" textAnchor="start" fontFamily="monospace">270° E</text>
+
+                    {/* QuickMap Polar Stereographic Meter Coordinates */}
+                    {(() => {
+                      const { x, y } = latLonToSouthPoleStereographic(activeSite.latitude, activeSite.longitude);
+                      return (
+                        <text x="160" y="275" fill="#38bdf8" fontSize="8" textAnchor="middle" fontFamily="monospace">
+                          Stereo X: {x.toFixed(0)}m | Y: {y.toFixed(0)}m
+                        </text>
+                      );
+                    })()}
+
+                    <ellipse cx="160" cy="160" rx="14" ry="10" fill="none" stroke="#06b6d4" strokeWidth="1.5" strokeDasharray="2 2" />
+                    <circle cx="160" cy="160" r="2.5" fill="#06b6d4" />
+                  </svg>
+                  <div className="absolute w-7 h-7 rounded-full border border-cyan-400/80 animate-ping pointer-events-none" />
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-4 mt-3 text-[10px] text-slate-300">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
+                    <span>LROC NAC High-Res Stereographic Overlay</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span>LOLA Altimetry Grid (20m/px)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: QuickMap Telemetry & Direct Launch */}
+              <div className="lg:col-span-5 flex flex-col justify-between gap-4">
+                <div className="bg-[#050914] rounded-xl border border-slate-800 p-4 space-y-3">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center justify-between">
+                    <span>LROC IM-LDI CONFIGURATION</span>
+                    <span className="text-cyan-400 font-mono text-[10px]">STACK 3314</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">PROJECTION</div>
+                      <div className="text-white font-bold text-sm mt-0.5">PROJ 10</div>
+                      <div className="text-[9px] text-slate-400">South Pole Stereographic</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">EARTH SHADOW</div>
+                      <div className="text-cyan-300 font-bold text-sm mt-0.5">ENABLED</div>
+                      <div className="text-[9px] text-slate-400">Real-time solar occlusion</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">PEAK ILLUMINATION</div>
+                      <div className="text-amber-300 font-bold text-sm mt-0.5">{activeSite.peakIlluminationSummerPct}%</div>
+                      <div className="text-[9px] text-slate-400">Summer Synodic Cycle</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#090e1c] border border-slate-800">
+                      <div className="text-[10px] text-slate-500">BOULDER HAZARD</div>
+                      <div className="text-emerald-400 font-bold text-sm mt-0.5">{activeSite.roughnessScore}</div>
+                      <div className="text-[9px] text-slate-400">NAC Stereo Roughness</div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-200">
+                    <strong>Direct LROC Integration:</strong> Coordinates and stereographic projection bounds (Stack 3314) are pre-calculated to center directly on this Artemis landing zone.
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <a
+                    href={liveQuickmapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black text-xs tracking-wider uppercase transition-all shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 cursor-pointer border border-cyan-400/50"
+                  >
+                    <Globe className="w-4 h-4 text-slate-950" />
+                    <span>LAUNCH OFFICIAL LROC QUICKMAP PORTAL (PROJ 10)</span>
+                    <ExternalLink className="w-3.5 h-3.5 ml-1 text-slate-900" />
+                  </a>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => handleCopyLink(liveQuickmapUrl, 'QUICKMAP')}
+                      className="py-2 px-2.5 rounded-lg bg-[#090e1c] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-all text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      {copiedLink === 'QUICKMAP' ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400">COPIED!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-cyan-400" />
+                          <span>COPY LINK</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setMappingMode('THREE_JS_3D')}
+                      className="py-2 px-2.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Box className="w-3 h-3 text-amber-400" />
+                      <span>3D MESH</span>
+                    </button>
+
+                    <button
+                      onClick={() => setMappingMode('NASA_LRO_GLOBE')}
+                      className="py-2 px-2.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition-all text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Orbit className="w-3 h-3 text-emerald-400" />
+                      <span>15K GLOBE</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

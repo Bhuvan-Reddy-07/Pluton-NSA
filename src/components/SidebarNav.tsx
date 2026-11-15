@@ -14,7 +14,9 @@ import {
   Signal,
   Layers,
   Sparkles,
+  FileText,
 } from 'lucide-react';
+import { getAssetPath } from '@/utils/assetPath';
 
 export type ActiveNavTab = 'WORKSPACE' | 'ASSESSMENT' | 'LAUNCH' | 'EVENTS';
 
@@ -83,7 +85,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             <div className="flex items-center gap-2.5">
               <div className="relative flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden border border-cyan-500/50 shadow-inner shadow-cyan-500/20 bg-[#060a17] flex-shrink-0 group">
                 <img
-                  src="/pluton-logo.png"
+                  src={getAssetPath('/pluton-logo.png')}
                   alt="PLUTON Profile Logo"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
@@ -228,6 +230,20 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </div>
             <span className="text-[9px] text-slate-500">A vs B</span>
           </button>
+
+          <a
+            href={getAssetPath('/PLUTON_LUNAR_RESEARCH_PAPER.pdf')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-[11px] font-bold text-blue-300 hover:text-white bg-blue-950/40 hover:bg-blue-900/60 border border-blue-500/50 transition-all cursor-pointer"
+            title="Read 11-Page Peer-Reviewed IEEE/AIAA Scientific Research Paper (PDF)"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5 text-blue-400" />
+              <span>RESEARCH PAPER</span>
+            </div>
+            <span className="text-[9px] text-blue-400 font-mono">11P PDF</span>
+          </a>
         </div>
       </div>
 
@@ -236,7 +252,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-cyan-400/60 shadow-md shadow-cyan-500/20 bg-[#080d1a] flex-shrink-0">
             <img
-              src="/pluton-logo.png"
+              src={getAssetPath('/pluton-logo.png')}
               alt="PLUTON Profile"
               className="w-full h-full object-cover"
             />

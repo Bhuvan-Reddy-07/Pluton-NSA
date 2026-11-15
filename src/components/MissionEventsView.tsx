@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { PhysicsTimeStep, LunarSite, HardwareProfile } from '@/types/pluton';
+import { getAssetPath } from '@/utils/assetPath';
 
 interface MissionEventsViewProps {
   steps: PhysicsTimeStep[];
@@ -160,7 +161,7 @@ export const MissionEventsView: React.FC<MissionEventsViewProps> = ({
         <div className="flex items-center gap-3.5">
           <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-cyan-400/60 flex-shrink-0 bg-[#080d1a] shadow-lg shadow-cyan-500/20">
             <img
-              src="/pluton-logo.png"
+              src={getAssetPath('/pluton-logo.png')}
               alt="PLUTON Profile"
               className="w-full h-full object-cover"
             />

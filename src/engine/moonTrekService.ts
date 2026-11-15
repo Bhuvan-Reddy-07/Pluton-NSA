@@ -3,6 +3,8 @@
  * Connects directly to NASA JPL Solar System Trek (Moon Trek) planetary GIS infrastructure
  */
 
+import { getAssetPath } from '@/utils/assetPath';
+
 export const NASA_MOON_TREK_DEFAULT_URL =
   'https://trek.nasa.gov/moon/#v=0.1&x=-26.89453074832113&y=-20.874023048125018&z=1&p=urn%3Aogc%3Adef%3Acrs%3AEPSG%3A%3A104903&d=&locale=&b=moon&e=-295.13671324464764%2C-149.19433315449353%2C241.34765174800538%2C107.4462870582435&sfz=&w=';
 
@@ -48,7 +50,7 @@ export function buildMoonTrekProxyUrl(
   zoom: MoonTrekZoomLevel = 'USER_DEFAULT'
 ): string {
   if (zoom === 'USER_DEFAULT') {
-    return `/api/trek`;
+    return getAssetPath('/api/trek');
   }
 
   let normLon = lonDeg;
@@ -64,6 +66,6 @@ export function buildMoonTrekProxyUrl(
 
   const extent = `${minLon},${minLat},${maxLon},${maxLat}`;
 
-  return `/api/trek?x=${normLon.toFixed(4)}&y=${latDeg.toFixed(4)}&z=${zLevel}&e=${encodeURIComponent(extent)}`;
+  return getAssetPath(`/api/trek?x=${normLon.toFixed(4)}&y=${latDeg.toFixed(4)}&z=${zLevel}&e=${encodeURIComponent(extent)}`);
 }
 

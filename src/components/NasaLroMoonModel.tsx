@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Orbit, Loader2 } from 'lucide-react';
+import { getAssetPath } from '@/utils/assetPath';
 
 export interface NasaLroMoonModelProps {
   radius?: number;
@@ -88,7 +89,8 @@ const NasaLroMeshInternal: React.FC<{
   receiveShadow = true,
   castShadow = true,
 }) => {
-  const gltf = useGLTF(modelUrl);
+  const resolvedModelUrl = getAssetPath(modelUrl);
+  const gltf = useGLTF(resolvedModelUrl);
 
   // Clone scene so multiple instances don't collide
   const clonedScene = useMemo(() => {
@@ -142,7 +144,7 @@ export const NasaLroMoonModel: React.FC<NasaLroMoonModelProps> = ({
   wireframe = false,
   opacity = 1.0,
   transparent = false,
-  modelUrl = '/Moon_NASA_LRO_15k_Grid_Small.glb',
+  modelUrl = getAssetPath('/Moon_NASA_LRO_15k_Grid_Small.glb'),
   receiveShadow = true,
   castShadow = true,
   children,
@@ -175,7 +177,7 @@ export const NasaLroMoonModel: React.FC<NasaLroMoonModelProps> = ({
 
 // Preload the NASA LRO 15k model into Three.js GLTF cache
 try {
-  useGLTF.preload('/Moon_NASA_LRO_15k_Grid_Small.glb');
+  useGLTF.preload(getAssetPath('/Moon_NASA_LRO_15k_Grid_Small.glb'));
 } catch {
   // Preload safe catch
 }

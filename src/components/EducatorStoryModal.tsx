@@ -14,6 +14,7 @@ import {
   Info,
   Radio,
 } from 'lucide-react';
+import { getAssetPath } from '@/utils/assetPath';
 
 interface EducatorStoryModalProps {
   isOpen: boolean;
@@ -113,7 +114,7 @@ export const EducatorStoryModal: React.FC<EducatorStoryModalProps> = ({ isOpen, 
           <div className="flex items-center gap-3">
             <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-cyan-500/50 shadow-md shadow-cyan-500/20 bg-[#080d1a] flex-shrink-0">
               <img
-                src="/pluton-logo.png"
+                src={getAssetPath('/pluton-logo.png')}
                 alt="PLUTON Profile"
                 className="w-full h-full object-cover"
               />

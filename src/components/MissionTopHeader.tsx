@@ -13,7 +13,9 @@ import {
   ShieldCheck,
   Flame,
   BatteryCharging,
+  FileText,
 } from 'lucide-react';
+import { getAssetPath } from '@/utils/assetPath';
 import {
   LunarSite,
   HardwareProfile,
@@ -60,7 +62,7 @@ export const MissionTopHeader: React.FC<MissionTopHeaderProps> = ({
         <div className="flex items-center gap-2 pr-2.5 border-r border-slate-800/90">
           <div className="relative w-7 h-7 rounded-lg overflow-hidden border border-cyan-400/60 shadow-md shadow-cyan-500/20 bg-[#080d1a] flex-shrink-0">
             <img
-              src="/pluton-logo.png"
+              src={getAssetPath('/pluton-logo.png')}
               alt="PLUTON Profile"
               className="w-full h-full object-cover"
             />
@@ -175,6 +177,18 @@ export const MissionTopHeader: React.FC<MissionTopHeaderProps> = ({
           </button>
         </div>
 
+        {/* Research Paper PDF Download */}
+        <a
+          href={getAssetPath('/PLUTON_LUNAR_RESEARCH_PAPER.pdf')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-blue-950/40 hover:bg-blue-900/60 text-blue-300 hover:text-white border border-blue-500/50 hover:border-blue-400 transition-all cursor-pointer text-[10px] font-bold shadow-sm"
+          title="Open Peer-Reviewed 11-Page Scientific Research Paper (AIAA/IEEE PDF)"
+        >
+          <FileText className="w-3.5 h-3.5 text-blue-400" />
+          <span className="hidden lg:inline">RESEARCH PAPER (PDF)</span>
+        </a>
+
         {/* Telemetry Report Export */}
         <button
           onClick={onExportReport}
@@ -192,7 +206,7 @@ export const MissionTopHeader: React.FC<MissionTopHeaderProps> = ({
         >
           <div className="relative w-7 h-7 rounded-full overflow-hidden border border-cyan-400/60 shadow-md shadow-cyan-500/20 group-hover:border-cyan-300 transition-colors bg-[#080d1a] flex-shrink-0">
             <img
-              src="/pluton-logo.png"
+              src={getAssetPath('/pluton-logo.png')}
               alt="Flight Director Profile"
               className="w-full h-full object-cover"
             />
